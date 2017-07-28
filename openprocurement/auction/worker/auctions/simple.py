@@ -96,7 +96,8 @@ def get_auction_info(self, prepare=False):
                 self.bidders_data.append({
                     'id': bid['id'],
                     'date': bid['date'],
-                    'value': bid['value']
+                    'value': bid['value'],
+                    'owner': bid.get('owner', '')
                 })
                 if self.features:
                     self.bidders_features[bid["id"]] = bid["parameters"]
@@ -204,7 +205,7 @@ def announce_results_data(self, results=None):
             request_id=self.request_id,
             session=self.session
         )
-    bids_information = dict([(bid["id"], bid["tenderers"])
+    bids_information = dict([(bid["id"], bid)
                              for bid in results["data"]["bids"]
                              if bid.get("status", "active") == "active"])
     for section in ['initial_bids', 'stages', 'results']:
