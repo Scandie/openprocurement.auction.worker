@@ -174,13 +174,13 @@ def prepare_auction_and_participation_urls(self):
 
 
 def post_results_data(self, with_auctions_results=True):
+    all_bids = self.auction_document["results"]
 
-    if with_auctions_results:
-        for index, bid_info in enumerate(self._auction_data["data"]["bids"]):
-            if bid_info.get('status', 'active') == 'active':
-                auction_bid_info = get_latest_bid_for_bidder(self.auction_document["results"], bid_info["id"])
-                self._auction_data["data"]["bids"][index]["value"]["amount"] = auction_bid_info["amount"]
-                self._auction_data["data"]["bids"][index]["date"] = auction_bid_info["time"]
+    for index, bid_info in enumerate(self._auction_data["data"]["bids"]):
+        if bid_info.get('status', 'active') == 'active':
+            auction_bid_info = get_latest_bid_for_bidder(all_bids, bid_info["id"])
+            self._auction_data["data"]["bids"][index]["value"]["amount"] = auction_bid_info["amount"]
+            self._auction_data["data"]["bids"][index]["date"] = auction_bid_info["time"]
 
     data = {'data': {'bids': self._auction_data["data"]['bids']}}
     LOGGER.info(
@@ -210,8 +210,9 @@ def announce_results_data(self, results=None):
     for section in ['initial_bids', 'stages', 'results']:
         for index, stage in enumerate(self.auction_document[section]):
             if 'bidder_id' in stage and stage['bidder_id'] in bids_information:
-                self.auction_document[section][index]["label"]["uk"] = bids_information[stage['bidder_id']][0]["name"]
-                self.auction_document[section][index]["label"]["ru"] = bids_information[stage['bidder_id']][0]["name"]
-                self.auction_document[section][index]["label"]["en"] = bids_information[stage['bidder_id']][0]["name"]
+                self.auction_document[section][index]["label"]["uk"] = bids_information[stage['bidder_id']]["tenderers"][0]["name"]
+                self.auction_document[section][index]["label"]["ru"] = bids_information[stage['bidder_id']]["tenderers"][0]["name"]
+                self.auction_document[section][index]["label"]["en"] = bids_information[stage['bidder_id']]["tenderers"][0]["name"]
+
     self.auction_document["current_stage"] = (len(self.auction_document["stages"]) - 1)
     return bids_information
