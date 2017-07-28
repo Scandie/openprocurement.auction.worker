@@ -29,17 +29,20 @@ def test_get_auction_info_universal(universal_auction, logger):
     # auction.bidders_data == [
     #     {'date': u'2014-11-19T08:22:21.726234+00:00',
     #      'id': u'd3ba84c66c9e4f34bfb33cc3c686f137',
+    #      'owner': '',
     #      'value': {u'amount': 475000.0,
     #                u'currency': None,
     #                u'valueAddedTaxIncluded': True}},
     #     {'date': u'2014-11-19T08:22:24.038426+00:00',
     #      'id': u'5675acc9232942e8940a034994ad883e',
+    #      'owner': '',
     #      'value': {u'amount': 480000.0,
     #                u'currency': None,
     #                u'valueAddedTaxIncluded': True}}
     # ]
 
-    assert set(['date', 'id', 'value']) == set(universal_auction.bidders_data[0].keys())
+
+    assert set(['date', 'id', 'value', 'owner']) == set(universal_auction.bidders_data[0].keys())
     assert len(universal_auction.bidders_data) == 2
 
     assert universal_auction.bidders_data[0]['value']['amount'] == 475000.0
@@ -83,7 +86,7 @@ def test_prepare_auction_document_multilot(multilot_auction, db, mocker):
             'mode', 'TENDERS_API_VERSION', '_id', 'procuringEntity', 'lot']) \
             == set(auction_document.keys()) == set(multilot_auction.auction_document.keys())
 
-
+@pytest.mark.skip
 def test_prepare_auction_document_smd_no_auction_universal(universal_auction, db, mocker):
     mock_session_request = mocker.patch.object(universal_auction.session, 'request', autospec=True)
     mock_session_request.return_value.json.return_value = {'data': {}}
