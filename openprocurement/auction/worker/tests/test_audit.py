@@ -4,18 +4,29 @@ from requests import Session
 def test_prepare_audit(auction, db):
     auction.prepare_audit()
 
-    # auction.audit == {'id': u'UA-11111',
-    #                   'tenderId': u'UA-11111',
-    #                   'tender_id': u'UA-11111',
-    #                   'timeline': {'auction_start': {'initial_bids': []},
-    #                                'round_1': {},
-    #                                'round_2': {},
-    #                                'round_3': {}}}
+    # {'auctionId': 'UA-11111',
+    #  'auction_id': u'UA-11111',
+    #  'id': u'UA-11111',
+    #  'items': [{u'additionalClassifications': [{
+    #                                                u'description': u'\u041f\u043e\u0441\u043b\u0443\u0433\u0438 \u0448\u043a\u0456\u043b\u044c\u043d\u0438\u0445 \u0457\u0434\u0430\u043b\u0435\u043d\u044c',
+    #                                                u'id': u'55.51.10.300',
+    #                                                u'scheme': u'\u0414\u041a\u041f\u041f'}],
+    #             u'classification': {
+    #                 u'description': u'\u041f\u043e\u0441\u043b\u0443\u0433\u0438 \u0437 \u0445\u0430\u0440\u0447\u0443\u0432\u0430\u043d\u043d\u044f \u0443 \u0448\u043a\u043e\u043b\u0430\u0445',
+    #                 u'id': u'55523100-3',
+    #                 u'scheme': u'CPV'},
+    #             u'description': u'\u041f\u043e\u0441\u043b\u0443\u0433\u0438 \u0448\u043a\u0456\u043b\u044c\u043d\u0438\u0445 \u0457\u0434\u0430\u043b\u0435\u043d\u044c',
+    #             u'quantity': 5,
+    #             u'unit': {u'name': u'item'}}],
+    #  'timeline': {'auction_start': {'initial_bids': []},
+    #               'round_1': {},
+    #               'round_2': {},
+    #               'round_3': {}}}
 
-    assert set(['id', 'tenderId', 'tender_id', 'timeline']) == set(auction.audit.keys())
+    assert set(['id', 'auctionId', 'auction_id', 'timeline', 'items']) == set(auction.audit.keys())
     assert auction.audit['id'] == 'UA-11111'
-    assert auction.audit['tenderId'] == 'UA-11111'
-    assert auction.audit['tender_id'] == 'UA-11111'
+    assert auction.audit['auctionId'] == 'UA-11111'
+    assert auction.audit['auction_id'] == 'UA-11111'
     assert len(auction.audit['timeline']) == 4
     assert 'auction_start' in auction.audit['timeline']
     for i in range(1, len(auction.audit['timeline'])):

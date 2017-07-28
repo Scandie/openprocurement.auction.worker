@@ -35,8 +35,8 @@ with open(worker_defaults_file_path) as stream:
 @pytest.yield_fixture(
     scope="function",
     params=[
-        {'tender_data': tender_data, 'lot_id': False},
-        {'tender_data': lot_tender_data, 'lot_id': lot_tender_data['data']['lots'][0]['id']}
+        {'tender_data': tender_data, 'lot_id': False, 'id': 'auctionID'},
+        {'tender_data': lot_tender_data, 'lot_id': lot_tender_data['data']['lots'][0]['id'], 'id': 'tenderID'}
     ],
     ids=['simple', 'multilot']
 )
@@ -44,18 +44,19 @@ def universal_auction(request):
     update_auctionPeriod(request.param['tender_data'])
 
     yield Auction(
-        tender_id=request.param['tender_data']['data']['tenderID'],
+        tender_id=request.param['tender_data']['data'][request.param['id']],
         worker_defaults=yaml.load(open(worker_defaults_file_path)),
         auction_data=request.param['tender_data'],
         lot_id=request.param['lot_id']
     )
+
 
 @pytest.yield_fixture(scope="function")
 def auction():
     update_auctionPeriod(tender_data)
 
     yield Auction(
-        tender_id=tender_data['data']['tenderID'],
+        tender_id=tender_data['data']['auctionID'],
         worker_defaults=yaml.load(open(worker_defaults_file_path)),
         auction_data=tender_data,
         lot_id=False
@@ -77,7 +78,7 @@ def multilot_auction():
 def features_auction():
 
     yield Auction(
-        tender_id=features_tender_data['data']['tenderID'],
+        tender_id=features_tender_data['data']['auctionID'],
         worker_defaults=yaml.load(open(worker_defaults_file_path)),
         auction_data=features_tender_data,
         lot_id=False
@@ -128,6 +129,5 @@ def pytest_configure(config):
 def pytest_runtest_setup(item):
     worker_marker = item.get_marker("worker")
     if worker_marker is not None:
-        # import pdb; pdb.set_trace()
         if not item.config.getoption("worker", False):
             pytest.skip("test requires worker option (--worker)")
