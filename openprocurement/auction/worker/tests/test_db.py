@@ -86,96 +86,12 @@ def test_prepare_auction_document_multilot(multilot_auction, db, mocker):
             'mode', 'TENDERS_API_VERSION', '_id', 'procuringEntity', 'lot']) \
             == set(auction_document.keys()) == set(multilot_auction.auction_document.keys())
 
-@pytest.mark.skip
-def test_prepare_auction_document_smd_no_auction_universal(universal_auction, db, mocker):
-    mock_session_request = mocker.patch.object(universal_auction.session, 'request', autospec=True)
-    mock_session_request.return_value.json.return_value = {'data': {}}
-    universal_auction._auction_data['data']['submissionMethodDetails'] = 'quick(mode:no-auction)'
-    res = universal_auction.prepare_auction_document()
-    assert res == 0
-    del universal_auction._auction_data['data']['submissionMethodDetails']
-
-
-def test_prepare_auction_document_smd_fast_forward(auction, db, mocker):
-    test_bids = deepcopy(tender_data['data']['bids'])
-
-    for bid in test_bids:
-        bid['tenderers'] = [test_organization]
-    mock_session_request = mocker.patch.object(auction.session, 'request', autospec=True)
-    mock_session_request.return_value.json.return_value = {
-        'data': {
-            'bids': test_bids
-        }
-    }
-    auction._auction_data['data']['submissionMethodDetails'] = 'quick(mode:fast-forward)'
-    auction.prepare_auction_document()
-    auction_document = auction.db.get(auction.auction_doc_id)
-    assert auction_document is not None
-    assert auction_document['_id'] == 'UA-11111'
-    assert auction_document['_rev'] == auction.auction_document['_rev']
-    assert '_rev' in auction_document
-    assert set(['tenderID', 'initial_bids', 'current_stage',
-                'description', 'title', 'minimalStep', 'items',
-                'stages', 'procurementMethodType', 'results',
-                'value', 'test_auction_data', 'auction_type', '_rev',
-                'mode', 'TENDERS_API_VERSION', '_id', 'procuringEntity', 'endDate']) \
-           == set(auction_document.keys()) == set(auction.auction_document.keys())
-    del auction._auction_data['data']['submissionMethodDetails']
-
-
-def test_prepare_auction_document_smd_fast_forward_multilot(multilot_auction, db, mocker):
-    test_bids = deepcopy(tender_data['data']['bids'])
-
-    for bid in test_bids:
-        bid['tenderers'] = [test_organization]
-    mock_session_request = mocker.patch.object(multilot_auction.session, 'request', autospec=True)
-    mock_session_request.return_value.json.return_value = {
-        'data': {
-            'bids': test_bids
-        }
-    }
-    multilot_auction._auction_data['data']['submissionMethodDetails'] = 'quick(mode:fast-forward)'
-    multilot_auction.prepare_auction_document()
-    auction_document = multilot_auction.db.get(multilot_auction.auction_doc_id)
-    assert auction_document is not None
-    assert auction_document['_id'] == 'UA-11111_2222222222222222'
-    assert auction_document['_rev'] == multilot_auction.auction_document['_rev']
-    assert '_rev' in auction_document
-    assert set(['tenderID', 'initial_bids', 'current_stage',
-                'description', 'title', 'minimalStep', 'items',
-                'stages', 'procurementMethodType', 'results',
-                'value', 'test_auction_data', 'auction_type', '_rev', 'lot',
-                'mode', 'TENDERS_API_VERSION', '_id', 'procuringEntity', 'endDate']) \
-           == set(auction_document.keys()) == set(multilot_auction.auction_document.keys())
-    del multilot_auction._auction_data['data']['submissionMethodDetails']
-
 
 def test_prepare_auction_document_false_no_debug(auction, db, mocker):
     auction.debug = False
     mock_set_auction_and_participation_urls = mocker.patch.object(Auction, 'set_auction_and_participation_urls', autospec=True)
     mock_session_request = mocker.patch.object(auction.session, 'request', autospec=True)
     mock_session_request.return_value.json.return_value = auction._auction_data
-    auction.prepare_auction_document()
-    assert mock_set_auction_and_participation_urls.called is True
-    assert mock_set_auction_and_participation_urls.call_count == 1
-
-
-def test_prepare_auction_document_smd_fast_forward_no_debug(auction, db, mocker):
-    auction.debug = False
-
-    test_bids = deepcopy(tender_data['data']['bids'])
-    auction_period = tender_data['data']['auctionPeriod']
-    for bid in test_bids:
-        bid['tenderers'] = [test_organization]
-    mock_session_request = mocker.patch.object(auction.session, 'request', autospec=True)
-    mock_session_request.return_value.json.return_value = {'data': {
-            'bids': test_bids,
-            'auctionPeriod': auction_period,
-            'submissionMethodDetails': 'quick(mode:fast-forward)'
-        }
-    }
-
-    mock_set_auction_and_participation_urls = mocker.patch.object(Auction, 'set_auction_and_participation_urls', autospec=True)
     auction.prepare_auction_document()
     assert mock_set_auction_and_participation_urls.called is True
     assert mock_set_auction_and_participation_urls.call_count == 1

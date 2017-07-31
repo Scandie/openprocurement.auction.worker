@@ -133,31 +133,6 @@ class DBServiceMixin(object):
             self.auction_document['test_auction_data'] = deepcopy(self._auction_data)
 
         self.get_auction_info(prepare=True)
-        if self.worker_defaults.get('sandbox_mode', False):
-            submissionMethodDetails = self._auction_data['data'].get('submissionMethodDetails', '')
-            if submissionMethodDetails == 'quick(mode:no-auction)':
-                if self.lot_id:
-                    multilot.post_results_data(self, with_auctions_results=False)
-                else:
-                    simple.post_results_data(self, with_auctions_results=False)
-                return 0
-            elif submissionMethodDetails == 'quick(mode:fast-forward)':
-                if self.lot_id:
-                    self.auction_document = multilot.prepare_auction_document(self)
-                else:
-                    self.auction_document = simple.prepare_auction_document(self)
-                if not self.debug:
-                    self.set_auction_and_participation_urls()
-                self.get_auction_info()
-                self.prepare_auction_stages_fast_forward()
-                self.save_auction_document()
-                if self.lot_id:
-                    multilot.post_results_data(self, with_auctions_results=False)
-                else:
-                    simple.post_results_data(self, with_auctions_results=False)
-                    simple.announce_results_data(self, None)
-                self.save_auction_document()
-                return
 
         if self.lot_id:
             self.auction_document = multilot.prepare_auction_document(self)
